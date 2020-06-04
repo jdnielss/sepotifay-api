@@ -1,0 +1,42 @@
+version: "3"
+volumes:
+  uploads:
+    external: false
+  database:
+    external: false
+networks:
+  services: {}
+services:
+  mysql-service:
+    image: mysql:5
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password --lower_case_table_names=1 --skip-ssl --character_set_server=utf8 --explicit_defaults_for_timestamp --disable-partition-engine-check
+    environment:
+      MYSQL_ROOT_PASSWORD: akar2an
+      MYSQL_DATABASE: sepotifay
+      MYSQL_USER: sepotifay
+      MYSQL_PASSWORD: sepotifay
+      TZ: Asia/Jakarta
+    ports:
+      - 6603:3306
+    volumes:
+      - database:/mysql-data
+    networks:
+      - services
+      # Link
+  api-service: 
+    depends_on:
+      - mysql-service
+    image: sepotifay-api:latest
+    restart: always
+    ports:
+      - 5678:8080
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-service:3306/sepotifay?useSSL=false
+      SPRING_DATASOURCE_USERNAME: sepotifay
+      SPRING_DATASOURCE_PASSWORD: sepotifay
+    volumes:
+      - uploads:/uploads
+    networks:
+      - services
